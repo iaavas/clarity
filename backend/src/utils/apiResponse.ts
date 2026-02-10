@@ -7,18 +7,18 @@ export type ApiResponse<T> = {
 };
 
 export const sendSuccess = <T>(
-  res: Response<ApiResponse<T>>,
+  res: Response,
   data: T,
   message: string,
   status = 200,
 ) => {
-  return res.status(status).json({ success: true, message, data });
+  return (res as Response<ApiResponse<T>>).status(status).json({ success: true, message, data });
 };
 
 export const sendError = (
-  res: Response<ApiResponse<null>>,
+  res: Response,
   message: string,
   status = 500,
 ) => {
-  return res.status(status).json({ success: false, message });
+  return (res as Response<ApiResponse<null>>).status(status).json({ success: false, message });
 };
