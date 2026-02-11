@@ -5,6 +5,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { ThemeSwitch } from "@/components/ThemeSwitch";
 import { signupSchema, type SignupFormData } from "@/features/auth/auth.schema";
 import { authAPI } from "@/features/auth/auth.api";
 import { getErrorMessage } from "@/lib/api";
@@ -39,66 +40,66 @@ export default function Signup() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-white p-4">
-      <div className="w-full max-w-md rounded-xl border border-slate-200 bg-white p-6 sm:p-8">
-        <h1 className="text-2xl font-bold text-slate-900">Sign up</h1>
-        <p className="mt-1 text-sm text-slate-500">
+    <div className="flex min-h-screen items-center justify-center bg-background p-4">
+      <div className="absolute right-4 top-4">
+        <ThemeSwitch />
+      </div>
+      <div className="w-full max-w-md rounded-xl border border-border bg-card p-6 sm:p-8 text-card-foreground">
+        <h1 className="text-2xl font-bold text-foreground">Sign up</h1>
+        <p className="mt-1 text-sm text-muted-foreground">
           Create a new account to get started
         </p>
         <form onSubmit={handleSubmit(onSubmit)} className="mt-6 space-y-4">
           {error && (
-            <div className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-800">
+            <div className="rounded-lg border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive">
               {error}
             </div>
           )}
           <div className="space-y-2">
-            <Label htmlFor="email" className="text-slate-700">
+            <Label htmlFor="email" className="text-foreground">
               Email
             </Label>
             <Input
               id="email"
               type="email"
               placeholder="you@example.com"
-              className="border-slate-200"
               {...register("email")}
               aria-invalid={errors.email ? "true" : "false"}
             />
             {errors.email && (
-              <p className="text-sm text-red-600">{errors.email.message}</p>
+              <p className="text-sm text-destructive">{errors.email.message}</p>
             )}
           </div>
           <div className="space-y-2">
-            <Label htmlFor="password" className="text-slate-700">
+            <Label htmlFor="password" className="text-foreground">
               Password
             </Label>
             <Input
               id="password"
               type="password"
               placeholder="••••••••"
-              className="border-slate-200"
               {...register("password")}
               aria-invalid={errors.password ? "true" : "false"}
             />
             {errors.password && (
-              <p className="text-sm text-red-600">
+              <p className="text-sm text-destructive">
                 {errors.password.message}
               </p>
             )}
           </div>
           <div className="space-y-2">
-            <Label htmlFor="confirmPassword" className="text-slate-700">
+            <Label htmlFor="confirmPassword" className="text-foreground">
               Confirm password
             </Label>
             <Input
               id="confirmPassword"
               type="password"
               placeholder="••••••••"
-              className="border-slate-200"
               {...register("confirmPassword")}
               aria-invalid={errors.confirmPassword ? "true" : "false"}
             />
             {errors.confirmPassword && (
-              <p className="text-sm text-red-600">
+              <p className="text-sm text-destructive">
                 {errors.confirmPassword.message}
               </p>
             )}
@@ -110,7 +111,7 @@ export default function Signup() {
           >
             {loading ? "Creating account..." : "Sign up"}
           </Button>
-          <p className="text-center text-sm text-slate-500">
+          <p className="text-center text-sm text-muted-foreground">
             Already have an account?{" "}
             <Link to="/login" className="font-medium text-violet-600 hover:underline">
               Login

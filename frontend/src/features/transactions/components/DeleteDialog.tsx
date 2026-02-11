@@ -21,7 +21,7 @@ export function DeleteDialog() {
           <DialogTitle className="text-xl">Delete transaction</DialogTitle>
         </DialogHeader>
         <div className="py-4">
-          <p className="text-slate-600">
+          <p className="text-muted-foreground">
             Are you sure you want to delete this transaction? This action cannot
             be undone.
           </p>

@@ -26,36 +26,40 @@ export function FilterBar() {
     <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:flex-wrap sm:items-end">
       <div className="flex flex-1 flex-wrap items-end gap-3 gap-y-2">
         <div className="min-w-[120px]">
-          <label className="mb-1 block text-xs text-slate-500">From</label>
+          <label className="mb-1 block text-xs text-muted-foreground">
+            From
+          </label>
           <Input
             type="date"
             value={filters.startDate}
             onChange={(e) =>
               setFilters({ ...filters, startDate: e.target.value })
             }
-            className="h-9 border-slate-200"
+            className="h-9"
           />
         </div>
         <div className="min-w-[120px]">
-          <label className="mb-1 block text-xs text-slate-500">To</label>
+          <label className="mb-1 block text-xs text-muted-foreground">To</label>
           <Input
             type="date"
             value={filters.endDate}
             onChange={(e) =>
               setFilters({ ...filters, endDate: e.target.value })
             }
-            className="h-9 border-slate-200"
+            className="h-9 text-white"
           />
         </div>
         <div className="min-w-[100px]">
-          <label className="mb-1 block text-xs text-slate-500">Type</label>
+          <label className="mb-1 block text-xs text-muted-foreground">
+            Type
+          </label>
           <Select
             value={filterType || "all"}
             onValueChange={(v) =>
               setFilterType(v === "all" ? "" : (v as "INCOME" | "EXPENSE"))
             }
           >
-            <SelectTrigger className="h-9 border-slate-200">
+            <SelectTrigger className="h-9">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -66,9 +70,11 @@ export function FilterBar() {
           </Select>
         </div>
         <div className="min-w-[120px]">
-          <label className="mb-1 block text-xs text-slate-500">Category</label>
+          <label className="mb-1 block text-xs text-muted-foreground">
+            Category
+          </label>
           <Select value={filterCategory} onValueChange={setFilterCategory}>
-            <SelectTrigger className="h-9 border-slate-200">
+            <SelectTrigger className="h-9">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
