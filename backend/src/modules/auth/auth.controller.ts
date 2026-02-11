@@ -1,4 +1,4 @@
-import { RequestHandler } from "express";
+import { CookieOptions, RequestHandler } from "express";
 import * as AuthService from "./auth.service";
 import { sendError, sendSuccess } from "../../utils/apiResponse";
 import { signupSchema, loginSchema } from "./auth.schema";
@@ -17,11 +17,11 @@ export const signup: RequestHandler = async (req, res) => {
     const cookieOptions = {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
-      sameSite: "strict" as const,
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
       maxAge: 7 * 24 * 60 * 60 * 1000,
     };
 
-    res.cookie("token", result.token, cookieOptions);
+    res.cookie("token", result.token, cookieOptions as CookieOptions);
 
     return sendSuccess(
       res,
@@ -48,11 +48,11 @@ export const login: RequestHandler = async (req, res) => {
     const cookieOptions = {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
-      sameSite: "strict" as const,
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
       maxAge: 7 * 24 * 60 * 60 * 1000,
     };
 
-    res.cookie("token", result.token, cookieOptions);
+    res.cookie("token", result.token, cookieOptions as CookieOptions);
 
     return sendSuccess(res, { user: result.user }, "Login successful", 200);
   } catch (error: any) {
@@ -82,7 +82,7 @@ export const logout: RequestHandler = async (req, res) => {
   res.clearCookie("token", {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
-    sameSite: "strict",
+    sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
   });
   return sendSuccess(res, null, "Logout successful", 200);
 };
@@ -99,7 +99,7 @@ export const deleteAccount: RequestHandler = async (req, res) => {
     res.clearCookie("token", {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
-      sameSite: "strict",
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
     });
 
     return sendSuccess(res, result, "Account deleted successfully", 200);
