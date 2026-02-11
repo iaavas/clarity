@@ -31,9 +31,12 @@ export function FilterBar() {
           </label>
           <Input
             type="date"
-            value={filters.startDate}
+            value={filters.startDate || ""}
             onChange={(e) =>
-              setFilters({ ...filters, startDate: e.target.value })
+              setFilters({
+                ...filters,
+                startDate: e.target.value || undefined,
+              })
             }
             className="h-9"
           />
@@ -42,9 +45,12 @@ export function FilterBar() {
           <label className="mb-1 block text-xs text-muted-foreground">To</label>
           <Input
             type="date"
-            value={filters.endDate}
+            value={filters.endDate || ""}
             onChange={(e) =>
-              setFilters({ ...filters, endDate: e.target.value })
+              setFilters({
+                ...filters,
+                endDate: e.target.value || undefined,
+              })
             }
             className="h-9 text-white"
           />

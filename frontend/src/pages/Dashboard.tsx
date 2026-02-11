@@ -8,6 +8,7 @@ import {
   DeleteDialog,
   ErrorBanner,
 } from "@/features/transactions/components";
+import { AIChat } from "@/components/AIChat";
 
 import { useDataStore } from "@/features/transactions/store/dataStore";
 import { useTransactions } from "@/features/transactions/hooks/useTransactions";
@@ -70,6 +71,8 @@ export default function Dashboard() {
             <CategoryPieChart data={categoryExpenses} />
           </Suspense>
         </div>
+
+        <AIChat />
 
         <FilterBar />
         <TransactionList />
