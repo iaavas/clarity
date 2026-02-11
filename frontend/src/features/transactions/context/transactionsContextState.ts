@@ -27,6 +27,11 @@ export interface TransactionsContextValue {
   editingTransaction: Transaction | null;
   deleteDialogOpen: boolean;
   deleteId: string | null;
+  dialogStep: number;
+  setDialogStep: (step: number) => void;
+  nextDialogStep: () => void;
+  prevDialogStep: () => void;
+  resetDialogStep: () => void;
   handleLogout: () => void;
   refetchTransactions: () => Promise<unknown>;
   saveTransaction: (params: {

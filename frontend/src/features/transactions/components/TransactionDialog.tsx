@@ -17,20 +17,22 @@ import {
 } from "@/components/ui/dialog";
 import {
   Form,
-  FormControl,
   FormField,
   FormItem,
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { ArrowRight, Check, TrendingUp, TrendingDown } from "lucide-react";
+import { cn } from "@/lib/utils";
+
+const DEFAULT_VALUES: TransactionFormData = {
+  amount: 0,
+  type: "EXPENSE",
+  categoryName: "",
+  description: "",
+  date: format(new Date(), "yyyy-MM-dd"),
+};
 
 export function TransactionDialog() {
   const {
@@ -38,172 +40,277 @@ export function TransactionDialog() {
     editingTransaction: transaction,
     closeEditDialog: onClose,
     saveTransaction,
+    dialogStep: step,
+    nextDialogStep,
+    prevDialogStep,
+    resetDialogStep,
   } = useTransactionsContext();
+  const totalSteps = 3;
 
   const form = useForm<TransactionFormData>({
     resolver: zodResolver(transactionFormSchema),
-    defaultValues: {
-      amount: 0,
-      type: "EXPENSE",
-      categoryName: "",
-      description: "",
-      date: format(new Date(), "yyyy-MM-dd"),
-    },
+    defaultValues: DEFAULT_VALUES,
   });
 
   useEffect(() => {
-    if (open) {
-      if (transaction) {
-        form.reset({
-          amount: Number(transaction.amount),
-          type: transaction.type,
-          categoryName: transaction.category.name,
-          description: transaction.description ?? "",
-          date: format(new Date(transaction.date), "yyyy-MM-dd"),
-        });
-      } else {
-        form.reset({
-          amount: 0,
-          type: "EXPENSE",
-          categoryName: "",
-          description: "",
-          date: format(new Date(), "yyyy-MM-dd"),
-        });
-      }
+    if (transaction && open) {
+      form.reset({
+        amount: Number(transaction.amount),
+        type: transaction.type,
+        categoryName: transaction.category.name,
+        description: transaction.description || "",
+        date: format(new Date(transaction.date), "yyyy-MM-dd"),
+      });
+    } else if (open) {
+      form.reset(DEFAULT_VALUES);
     }
-  }, [open, transaction, form]);
+  }, [transaction, open, form]);
+
+  const handleClose = () => {
+    form.reset(DEFAULT_VALUES);
+    resetDialogStep();
+    onClose();
+  };
+
+  const handleNext = async () => {
+    const fieldsByStep: Record<number, (keyof TransactionFormData)[]> = {
+      1: ["amount", "type"],
+      2: ["categoryName"],
+      3: ["description", "date"],
+    };
+    const isValid = await form.trigger(fieldsByStep[step]);
+    if (isValid) {
+      nextDialogStep();
+    }
+  };
 
   const onSubmit = async (data: TransactionFormData) => {
+    if (step !== totalSteps) {
+      return;
+    }
+
     try {
-      await saveTransaction({
-        transaction,
-        data: {
-          amount: data.amount,
-          type: data.type,
-          categoryName: data.categoryName,
-          description: data.description,
-          date: data.date,
-        },
-      });
-    } catch {
-      // saveTransaction already calls setError on failure
+      await saveTransaction({ transaction, data });
+      form.reset(DEFAULT_VALUES);
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      if (step < totalSteps) {
+        handleNext();
+      } else {
+        form.handleSubmit(onSubmit)();
+      }
     }
   };
 
   return (
-    <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[500px]">
+    <Dialog open={open} onOpenChange={(isOpen) => !isOpen && handleClose()}>
+      <DialogContent className="sm:max-w-[450px]" onKeyDown={handleKeyDown}>
         <DialogHeader>
-          <DialogTitle className="text-2xl">
-            {transaction ? "Edit transaction" : "Add transaction"}
-          </DialogTitle>
+          <div className="flex flex-col gap-4">
+            <div className="flex items-center justify-between">
+              <DialogTitle className="text-2xl font-bold">
+                {transaction ? "Edit" : "New"} Transaction
+              </DialogTitle>
+              <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                Step {step} of {totalSteps}
+              </span>
+            </div>
+            <div className="flex gap-2">
+              {[1, 2, 3].map((i) => (
+                <div
+                  key={i}
+                  className={cn(
+                    "h-1.5 flex-1 rounded-full transition-all",
+                    i <= step ? "bg-violet-600" : "bg-secondary",
+                  )}
+                />
+              ))}
+            </div>
+          </div>
         </DialogHeader>
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-            <FormField
-              control={form.control}
-              name="type"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Type</FormLabel>
-                  <Select onValueChange={field.onChange} value={field.value}>
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      <SelectItem value="INCOME">Income</SelectItem>
-                      <SelectItem value="EXPENSE">Expense</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
 
-            <FormField
-              control={form.control}
-              name="amount"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Amount</FormLabel>
-                  <FormControl>
-                    <Input
-                      type="number"
-                      step="0.01"
-                      min="0"
-                      placeholder="0.00"
-                      {...field}
-                      value={field.value}
-                      onChange={(e) =>
-                        field.onChange(
-                          e.target.value === "" ? 0 : Number(e.target.value),
-                        )
-                      }
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+        <Form {...form} key={open ? "open" : "closed"}>
+          <form
+            onSubmit={(e) => {
+              if (step < totalSteps) {
+                e.preventDefault();
+                handleNext();
+              } else {
+                form.handleSubmit(onSubmit)(e);
+              }
+            }}
+            className="space-y-6 pt-4"
+          >
+            {step === 1 && (
+              <div className="space-y-4 animate-in fade-in slide-in-from-right-4">
+                <FormField
+                  control={form.control}
+                  name="type"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Transaction Type</FormLabel>
+                      <div className="grid grid-cols-2 gap-3">
+                        <TypeButton
+                          type="INCOME"
+                          current={field.value}
+                          onClick={() => field.onChange("INCOME")}
+                          icon={<TrendingUp />}
+                        />
+                        <TypeButton
+                          type="EXPENSE"
+                          current={field.value}
+                          onClick={() => field.onChange("EXPENSE")}
+                          icon={<TrendingDown />}
+                        />
+                      </div>
+                    </FormItem>
+                  )}
+                />
 
-            <FormField
-              control={form.control}
-              name="categoryName"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Category</FormLabel>
-                  <FormControl>
-                    <Input placeholder="e.g., Groceries, Salary" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+                <FormField
+                  control={form.control}
+                  name="amount"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Amount</FormLabel>
+                      <div className="relative">
+                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground font-bold">
+                          $
+                        </span>
+                        <Input
+                          type="number"
+                          placeholder="0.00"
+                          className="pl-7 text-xl font-semibold"
+                          {...field}
+                          value={field.value === 0 ? "" : field.value}
+                          onChange={(e) =>
+                            field.onChange(
+                              e.target.value === ""
+                                ? 0
+                                : Number(e.target.value),
+                            )
+                          }
+                        />
+                      </div>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+            )}
 
-            <FormField
-              control={form.control}
-              name="date"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Date</FormLabel>
-                  <FormControl>
-                    <Input type="date" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+            {step === 2 && (
+              <div className="space-y-4 animate-in fade-in slide-in-from-right-4">
+                <FormField
+                  control={form.control}
+                  name="categoryName"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Category</FormLabel>
+                      <Input
+                        placeholder="e.g., Groceries, Rent..."
+                        {...field}
+                        autoFocus
+                        className="text-lg"
+                      />
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+            )}
 
-            <FormField
-              control={form.control}
-              name="description"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Description (optional)</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Add a note..." {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+            {step === 3 && (
+              <div className="space-y-4 animate-in fade-in slide-in-from-right-4">
+                <FormField
+                  control={form.control}
+                  name="date"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Date</FormLabel>
+                      <Input type="date" {...field} />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="description"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Description</FormLabel>
+                      <Input placeholder="What was this for?" {...field} />
+                    </FormItem>
+                  )}
+                />
+              </div>
+            )}
 
-            <DialogFooter>
-              <Button type="button" variant="outline" onClick={onClose}>
-                Cancel
-              </Button>
+            <DialogFooter className="flex flex-row justify-between gap-3 pt-4 border-t">
               <Button
-                type="submit"
-                className="bg-violet-600 text-white hover:bg-violet-700"
+                type="button"
+                variant="ghost"
+                onClick={step === 1 ? handleClose : prevDialogStep}
               >
-                {transaction ? "Save" : "Add"}
+                {step === 1 ? "Cancel" : "Back"}
               </Button>
+
+              {step < totalSteps ? (
+                <Button
+                  type="button"
+                  onClick={handleNext}
+                  className="bg-violet-600 px-8"
+                >
+                  Next <ArrowRight className="ml-2 h-4 w-4" />
+                </Button>
+              ) : (
+                <Button type="submit" className="bg-violet-600 px-8">
+                  {transaction ? "Save" : "Complete"}{" "}
+                  <Check className="ml-2 h-4 w-4" />
+                </Button>
+              )}
             </DialogFooter>
           </form>
         </Form>
       </DialogContent>
     </Dialog>
+  );
+}
+function TypeButton({
+  type,
+  current,
+  onClick,
+  icon,
+}: {
+  type: "INCOME" | "EXPENSE";
+  current: "INCOME" | "EXPENSE";
+  onClick: () => void;
+  icon: React.ReactNode;
+}) {
+  const isActive = current === type;
+  const colorClass =
+    type === "INCOME"
+      ? "text-green-600 border-green-500 bg-green-50"
+      : "text-red-600 border-red-500 bg-red-50";
+
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={cn(
+        "flex flex-col items-center justify-center gap-2 rounded-lg border-2 p-4 transition-all",
+        isActive
+          ? colorClass
+          : "border-border bg-background text-muted-foreground",
+      )}
+    >
+      {icon}
+      <span className="font-semibold capitalize">{type.toLowerCase()}</span>
+    </button>
   );
 }

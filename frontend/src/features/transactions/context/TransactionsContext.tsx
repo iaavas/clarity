@@ -33,6 +33,7 @@ export function TransactionsProvider({ children }: { children: ReactNode }) {
     useState<Transaction | null>(null);
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [mutationError, setError] = useState("");
+  const [dialogStep, setDialogStep] = useState(1);
 
   const transactionsList = useTransactionsList({
     filters,
@@ -83,11 +84,13 @@ export function TransactionsProvider({ children }: { children: ReactNode }) {
 
   const openAddDialog = useCallback(() => {
     setEditingTransaction(null);
+    setDialogStep(1);
     setEditDialogOpen(true);
   }, []);
 
   const openEditDialog = useCallback((transaction: Transaction) => {
     setEditingTransaction(transaction);
+    setDialogStep(1);
     setEditDialogOpen(true);
   }, []);
 
@@ -98,6 +101,19 @@ export function TransactionsProvider({ children }: { children: ReactNode }) {
   const closeEditDialog = useCallback(() => {
     setEditDialogOpen(false);
     setEditingTransaction(null);
+    setDialogStep(1);
+  }, []);
+
+  const nextDialogStep = useCallback(() => {
+    setDialogStep((prev) => Math.min(prev + 1, 3));
+  }, []);
+
+  const prevDialogStep = useCallback(() => {
+    setDialogStep((prev) => Math.max(prev - 1, 1));
+  }, []);
+
+  const resetDialogStep = useCallback(() => {
+    setDialogStep(1);
   }, []);
 
   const closeDeleteDialog = useCallback(() => {
@@ -148,13 +164,14 @@ export function TransactionsProvider({ children }: { children: ReactNode }) {
             date: data.date,
           });
         }
+        resetDialogStep();
         closeEditDialog();
       } catch (err) {
         setError(getErrorMessage(err, "Failed to save transaction"));
         throw err;
       }
     },
-    [createMutation, updateMutation, closeEditDialog],
+    [createMutation, updateMutation, closeEditDialog, resetDialogStep],
   );
 
   const confirmDelete = useCallback(async () => {
@@ -191,6 +208,11 @@ export function TransactionsProvider({ children }: { children: ReactNode }) {
       editingTransaction,
       deleteDialogOpen: !!deleteId,
       deleteId,
+      dialogStep,
+      setDialogStep,
+      nextDialogStep,
+      prevDialogStep,
+      resetDialogStep,
       handleLogout,
       refetchTransactions,
       saveTransaction,
@@ -209,11 +231,15 @@ export function TransactionsProvider({ children }: { children: ReactNode }) {
       editDialogOpen,
       editingTransaction,
       deleteId,
+      dialogStep,
       openAddDialog,
       openEditDialog,
       openDeleteDialog,
       closeEditDialog,
       closeDeleteDialog,
+      nextDialogStep,
+      prevDialogStep,
+      resetDialogStep,
       handleLogout,
       refetchTransactions,
       saveTransaction,
