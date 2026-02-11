@@ -1,4 +1,4 @@
-import axios from "axios";
+import axios, { isAxiosError } from "axios";
 
 const api = axios.create({
   baseURL: import.meta.env.VITE_API_URL || "http://localhost:8000/api",
@@ -7,27 +7,22 @@ const api = axios.create({
   },
 });
 
-export interface LoginData {
-  email: string;
-  password: string;
+function getErrorMessage(error: unknown, fallback: string): string {
+  if (isAxiosError(error) && error.response?.data) {
+    const data = error.response.data;
+    if (
+      typeof data === "object" &&
+      data !== null &&
+      "message" in data &&
+      typeof (data as { message: unknown }).message === "string"
+    ) {
+      return (data as { message: string }).message;
+    }
+  }
+  if (error instanceof Error) return error.message;
+  return fallback;
 }
 
-export interface SignupData {
-  email: string;
-  password: string;
-  name?: string;
-}
-
-export const authAPI = {
-  login: async (data: LoginData) => {
-    const response = await api.post("/auth/login", data);
-    return response.data;
-  },
-
-  signup: async (data: SignupData) => {
-    const response = await api.post("/auth/signup", data);
-    return response.data;
-  },
-};
+export { getErrorMessage };
 
 export default api;

@@ -2,8 +2,7 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
-import { authAPI } from "@/lib/api";
+import { authAPI } from "@/features/auth/auth.api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -15,13 +14,8 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-
-const loginSchema = z.object({
-  email: z.string().email("Invalid email address"),
-  password: z.string().min(6, "Password must be at least 6 characters"),
-});
-
-type LoginFormData = z.infer<typeof loginSchema>;
+import { loginSchema, type LoginFormData } from "@/features/auth/auth.schema";
+import { getErrorMessage } from "@/lib/api";
 
 export default function Login() {
   const navigate = useNavigate();
@@ -42,10 +36,8 @@ export default function Login() {
     try {
       await authAPI.login(data);
       navigate("/");
-    } catch (err: any) {
-      setError(
-        err.response?.data?.message || "Login failed. Please try again.",
-      );
+    } catch (err: unknown) {
+      setError(getErrorMessage(err, "Login failed. Please try again."));
     } finally {
       setLoading(false);
     }
