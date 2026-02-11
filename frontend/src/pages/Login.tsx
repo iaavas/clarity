@@ -35,7 +35,7 @@ export default function Login() {
     setLoading(true);
     try {
       await authAPI.login(data);
-      navigate("/");
+      navigate("/dashboard");
     } catch (err: unknown) {
       setError(getErrorMessage(err, "Login failed. Please try again."));
     } finally {

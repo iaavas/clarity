@@ -5,6 +5,7 @@ const api = axios.create({
   headers: {
     "Content-Type": "application/json",
   },
+  withCredentials: true,
 });
 
 function getErrorMessage(error: unknown, fallback: string): string {
