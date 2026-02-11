@@ -9,6 +9,30 @@ interface UseTransactionDataParams {
   enabled: boolean;
 }
 
+export function useTransactionsList({
+  filters,
+  categoryId,
+  type,
+  enabled,
+}: UseTransactionDataParams) {
+  return useQuery({
+    queryKey: [
+      "transactions",
+      filters.startDate,
+      filters.endDate,
+      categoryId,
+      type,
+    ],
+    queryFn: () =>
+      transactionsAPI.list({
+        ...filters,
+        ...(categoryId && categoryId !== "all" && { categoryId }),
+        ...(type && { type }),
+      }),
+    enabled,
+  });
+}
+
 export function useTransactionCategories({
   filters,
   categoryId,

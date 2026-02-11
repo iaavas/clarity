@@ -1,4 +1,3 @@
-import { TransactionsProvider } from "@/features/transactions/context/TransactionsContext";
 import {
   DashboardHeader,
   OverviewCards,
@@ -11,14 +10,18 @@ import {
   CategoryPieChart,
 } from "@/features/transactions/components";
 
-import { useTransactionsContext } from "@/features/transactions/context/useTransactionsContext";
+import { useDataStore } from "@/features/transactions/store/dataStore";
+import { useTransactions } from "@/features/transactions/hooks/useTransactions";
 import {
   useMonthlyFinancials,
   useCategoryExpenses,
 } from "@/features/transactions/hooks/useTransactionData";
 
-function DashboardContent() {
-  const { filters, filterCategory, filterType, userEmail } = useTransactionsContext();
+export default function Dashboard() {
+  const filters = useDataStore((state) => state.filters);
+  const filterCategory = useDataStore((state) => state.filterCategory);
+  const filterType = useDataStore((state) => state.filterType);
+  const { userEmail } = useTransactions();
   const monthlyFinancialsQuery = useMonthlyFinancials({
     filters,
     categoryId: filterCategory,
@@ -52,13 +55,5 @@ function DashboardContent() {
         <DeleteDialog />
       </div>
     </div>
-  );
-}
-
-export default function Dashboard() {
-  return (
-    <TransactionsProvider>
-      <DashboardContent />
-    </TransactionsProvider>
   );
 }

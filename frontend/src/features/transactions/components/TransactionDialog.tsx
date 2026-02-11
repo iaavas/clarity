@@ -6,7 +6,8 @@ import {
   transactionFormSchema,
   type TransactionFormData,
 } from "@/features/transactions/transaction.schema";
-import { useTransactionsContext } from "@/features/transactions/context/useTransactionsContext";
+import { useUIStore } from "@/features/transactions/store/uiStore";
+import { useTransactionActions } from "@/features/transactions/hooks/useTransactionActions";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -35,16 +36,14 @@ const DEFAULT_VALUES: TransactionFormData = {
 };
 
 export function TransactionDialog() {
-  const {
-    editDialogOpen: open,
-    editingTransaction: transaction,
-    closeEditDialog: onClose,
-    saveTransaction,
-    dialogStep: step,
-    nextDialogStep,
-    prevDialogStep,
-    resetDialogStep,
-  } = useTransactionsContext();
+  const open = useUIStore((state) => state.editDialogOpen);
+  const transaction = useUIStore((state) => state.editingTransaction);
+  const step = useUIStore((state) => state.dialogStep);
+  const onClose = useUIStore((state) => state.closeEditDialog);
+  const nextDialogStep = useUIStore((state) => state.nextDialogStep);
+  const prevDialogStep = useUIStore((state) => state.prevDialogStep);
+  const resetDialogStep = useUIStore((state) => state.resetDialogStep);
+  const { saveTransaction } = useTransactionActions();
   const totalSteps = 3;
 
   const form = useForm<TransactionFormData>({
@@ -72,7 +71,12 @@ export function TransactionDialog() {
     onClose();
   };
 
-  const handleNext = async () => {
+  const handleNext = async (e?: React.MouseEvent | React.FormEvent) => {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+
     const fieldsByStep: Record<number, (keyof TransactionFormData)[]> = {
       1: ["amount", "type"],
       2: ["categoryName"],
@@ -85,13 +89,15 @@ export function TransactionDialog() {
   };
 
   const onSubmit = async (data: TransactionFormData) => {
-    if (step !== totalSteps) {
+    const currentStep = useUIStore.getState().dialogStep;
+    if (currentStep !== totalSteps) {
       return;
     }
 
     try {
       await saveTransaction({ transaction, data });
       form.reset(DEFAULT_VALUES);
+      handleClose();
     } catch (error) {
       console.error(error);
     }
@@ -100,6 +106,7 @@ export function TransactionDialog() {
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "Enter") {
       e.preventDefault();
+      e.stopPropagation();
       if (step < totalSteps) {
         handleNext();
       } else {
@@ -138,11 +145,14 @@ export function TransactionDialog() {
         <Form {...form} key={open ? "open" : "closed"}>
           <form
             onSubmit={(e) => {
-              if (step < totalSteps) {
-                e.preventDefault();
-                handleNext();
-              } else {
+              e.preventDefault();
+              e.stopPropagation();
+
+              const currentStep = useUIStore.getState().dialogStep;
+              if (currentStep === totalSteps) {
                 form.handleSubmit(onSubmit)(e);
+              } else {
+                handleNext(e);
               }
             }}
             className="space-y-6 pt-4"
@@ -263,13 +273,27 @@ export function TransactionDialog() {
               {step < totalSteps ? (
                 <Button
                   type="button"
-                  onClick={handleNext}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    handleNext(e);
+                  }}
                   className="bg-violet-600 px-8"
                 >
                   Next <ArrowRight className="ml-2 h-4 w-4" />
                 </Button>
               ) : (
-                <Button type="submit" className="bg-violet-600 px-8">
+                <Button
+                  type="submit"
+                  className="bg-violet-600 px-8"
+                  onClick={(e) => {
+                    const currentStep = useUIStore.getState().dialogStep;
+                    if (currentStep !== totalSteps) {
+                      e.preventDefault();
+                      e.stopPropagation();
+                    }
+                  }}
+                >
                   {transaction ? "Save" : "Complete"}{" "}
                   <Check className="ml-2 h-4 w-4" />
                 </Button>

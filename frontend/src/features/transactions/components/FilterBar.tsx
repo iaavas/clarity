@@ -8,20 +8,20 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useTransactionsContext } from "@/features/transactions/context/useTransactionsContext";
+import { useDataStore } from "@/features/transactions/store/dataStore";
+import { useUIStore } from "@/features/transactions/store/uiStore";
+import { useTransactions } from "@/features/transactions/hooks/useTransactions";
 import type { Category } from "../transaction.schema";
 
 export function FilterBar() {
-  const {
-    filters,
-    setFilters,
-    filterType,
-    setFilterType,
-    filterCategory,
-    setFilterCategory,
-    categories,
-    openAddDialog,
-  } = useTransactionsContext();
+  const filters = useDataStore((state) => state.filters);
+  const setFilters = useDataStore((state) => state.setFilters);
+  const filterType = useDataStore((state) => state.filterType);
+  const setFilterType = useDataStore((state) => state.setFilterType);
+  const filterCategory = useDataStore((state) => state.filterCategory);
+  const setFilterCategory = useDataStore((state) => state.setFilterCategory);
+  const openAddDialog = useUIStore((state) => state.openAddDialog);
+  const { categories } = useTransactions();
   return (
     <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:flex-wrap sm:items-end">
       <div className="flex flex-1 flex-wrap items-end gap-3 gap-y-2">

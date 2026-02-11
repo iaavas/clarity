@@ -1,15 +1,13 @@
 import { format } from "date-fns";
 import { Pencil, Trash2, CircleDollarSign } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useTransactionsContext } from "@/features/transactions/context/useTransactionsContext";
+import { useTransactions } from "@/features/transactions/hooks/useTransactions";
+import { useUIStore } from "@/features/transactions/store/uiStore";
 
 export function TransactionList() {
-  const {
-    transactions,
-    isLoading: loading,
-    openEditDialog: onEdit,
-    openDeleteDialog: onDelete,
-  } = useTransactionsContext();
+  const { transactions, isLoading: loading } = useTransactions();
+  const onEdit = useUIStore((state) => state.openEditDialog);
+  const onDelete = useUIStore((state) => state.openDeleteDialog);
 
   if (loading) {
     return (

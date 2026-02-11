@@ -1,8 +1,8 @@
 import { TrendingUp, TrendingDown } from "lucide-react";
-import { useTransactionsContext } from "@/features/transactions/context/useTransactionsContext";
+import { useTransactions } from "@/features/transactions/hooks/useTransactions";
 
 export function OverviewCards() {
-  const { overview } = useTransactionsContext();
+  const { overview } = useTransactions();
   return (
     <div className="mb-6">
       <div className="rounded-xl border border-border bg-card p-5 text-card-foreground">

@@ -6,14 +6,14 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { useTransactionsContext } from "@/features/transactions/context/useTransactionsContext";
+import { useUIStore } from "@/features/transactions/store/uiStore";
+import { useTransactionActions } from "@/features/transactions/hooks/useTransactionActions";
 
 export function DeleteDialog() {
-  const {
-    deleteDialogOpen: open,
-    closeDeleteDialog: onClose,
-    confirmDelete: onConfirm,
-  } = useTransactionsContext();
+  const deleteId = useUIStore((state) => state.deleteId);
+  const open = !!deleteId;
+  const onClose = useUIStore((state) => state.closeDeleteDialog);
+  const { confirmDelete: onConfirm } = useTransactionActions();
   return (
     <Dialog open={open} onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="sm:max-w-[425px]">

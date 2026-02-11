@@ -1,9 +1,11 @@
 import { AlertCircle, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useTransactionsContext } from "@/features/transactions/context/useTransactionsContext";
+import { useTransactions } from "@/features/transactions/hooks/useTransactions";
+import { useUIStore } from "@/features/transactions/store/uiStore";
 
 export function ErrorBanner() {
-  const { error, setError } = useTransactionsContext();
+  const { error } = useTransactions();
+  const setError = useUIStore((state) => state.setError);
   if (!error) return null;
 
   return (
