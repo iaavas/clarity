@@ -6,14 +6,6 @@ import { authAPI } from "@/features/auth/auth.api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import { loginSchema, type LoginFormData } from "@/features/auth/auth.schema";
 import { getErrorMessage } from "@/lib/api";
 
@@ -44,65 +36,67 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background p-4">
-      <Card className="w-full max-w-md">
-        <CardHeader>
-          <CardTitle>Login</CardTitle>
-          <CardDescription>
-            Enter your credentials to access your account
-          </CardDescription>
-        </CardHeader>
-        <form onSubmit={handleSubmit(onSubmit)}>
-          <CardContent className="space-y-4">
-            {error && (
-              <div className="p-3 text-sm text-destructive bg-destructive/10 rounded-md">
-                {error}
-              </div>
+    <div className="flex min-h-screen items-center justify-center bg-white p-4">
+      <div className="w-full max-w-md rounded-xl border border-slate-200 bg-white p-6 sm:p-8">
+        <h1 className="text-2xl font-bold text-slate-900">Login</h1>
+        <p className="mt-1 text-sm text-slate-500">
+          Enter your credentials to access your account
+        </p>
+        <form onSubmit={handleSubmit(onSubmit)} className="mt-6 space-y-4">
+          {error && (
+            <div className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-800">
+              {error}
+            </div>
+          )}
+          <div className="space-y-2">
+            <Label htmlFor="email" className="text-slate-700">
+              Email
+            </Label>
+            <Input
+              id="email"
+              type="email"
+              placeholder="you@example.com"
+              className="border-slate-200"
+              {...register("email")}
+              aria-invalid={errors.email ? "true" : "false"}
+            />
+            {errors.email && (
+              <p className="text-sm text-red-600">{errors.email.message}</p>
             )}
-            <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
-              <Input
-                id="email"
-                type="email"
-                placeholder="you@example.com"
-                {...register("email")}
-                aria-invalid={errors.email ? "true" : "false"}
-              />
-              {errors.email && (
-                <p className="text-sm text-destructive">
-                  {errors.email.message}
-                </p>
-              )}
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
-              <Input
-                id="password"
-                type="password"
-                placeholder="••••••••"
-                {...register("password")}
-                aria-invalid={errors.password ? "true" : "false"}
-              />
-              {errors.password && (
-                <p className="text-sm text-destructive">
-                  {errors.password.message}
-                </p>
-              )}
-            </div>
-          </CardContent>
-          <CardFooter className="flex flex-col space-y-4">
-            <Button type="submit" className="w-full" disabled={loading}>
-              {loading ? "Logging in..." : "Login"}
-            </Button>
-            <p className="text-sm text-muted-foreground text-center">
-              Don't have an account?{" "}
-              <Link to="/signup" className="text-primary hover:underline">
-                Sign up
-              </Link>
-            </p>
-          </CardFooter>
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="password" className="text-slate-700">
+              Password
+            </Label>
+            <Input
+              id="password"
+              type="password"
+              placeholder="••••••••"
+              className="border-slate-200"
+              {...register("password")}
+              aria-invalid={errors.password ? "true" : "false"}
+            />
+            {errors.password && (
+              <p className="text-sm text-red-600">
+                {errors.password.message}
+              </p>
+            )}
+          </div>
+          <Button
+            type="submit"
+            className="w-full bg-violet-600 text-white hover:bg-violet-700"
+            disabled={loading}
+          >
+            {loading ? "Logging in..." : "Login"}
+          </Button>
+          <p className="text-center text-sm text-slate-500">
+            Don't have an account?{" "}
+            <Link to="/signup" className="font-medium text-violet-600 hover:underline">
+              Sign up
+            </Link>
+          </p>
         </form>
-      </Card>
+      </div>
     </div>
   );
 }
