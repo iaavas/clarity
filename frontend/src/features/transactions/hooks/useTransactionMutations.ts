@@ -7,8 +7,13 @@ export function useTransactionMutations() {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
 
-  const invalidateTransactions = () =>
+  const invalidateTransactions = () => {
     queryClient.invalidateQueries({ queryKey: ["transactions"] });
+    queryClient.invalidateQueries({ queryKey: ["transaction-overview"] });
+    queryClient.invalidateQueries({ queryKey: ["monthly-financials"] });
+    queryClient.invalidateQueries({ queryKey: ["category-expenses"] });
+    queryClient.invalidateQueries({ queryKey: ["transaction-categories"] });
+  };
 
   const createMutation = useMutation({
     mutationFn: (body: {

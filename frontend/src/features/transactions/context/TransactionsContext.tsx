@@ -55,8 +55,28 @@ export function TransactionsProvider({ children }: { children: ReactNode }) {
       ? getErrorMessage(listError, "Failed to load transactions")
       : "");
 
-  const categories = useTransactionCategories(transactions);
-  const overview = useTransactionOverview(transactions);
+  const categoriesQuery = useTransactionCategories({
+    filters,
+    categoryId: filterCategory,
+    type: filterType,
+    enabled: !!userEmail,
+  });
+
+  const overviewQuery = useTransactionOverview({
+    filters,
+    categoryId: filterCategory,
+    type: filterType,
+    enabled: !!userEmail,
+  });
+
+  const categories = useMemo(
+    () => categoriesQuery.data || [],
+    [categoriesQuery.data],
+  );
+  const overview = useMemo(
+    () => overviewQuery.data || { income: 0, expense: 0, balance: 0 },
+    [overviewQuery.data],
+  );
 
   const { createMutation, updateMutation, deleteMutation } =
     useTransactionMutations();

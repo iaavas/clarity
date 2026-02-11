@@ -95,3 +95,185 @@ export const deleteTransactionById = async (
   });
   return deleted.count > 0;
 };
+
+export const getTransactionOverview = async (filters: TransactionFilters) => {
+  const { userId, categoryId, type, startDate, endDate } = filters;
+  const start = parseDate(startDate);
+  const end = parseDate(endDate);
+
+  const transactions = await prisma.transaction.findMany({
+    where: {
+      userId,
+      ...(categoryId && { categoryId }),
+      ...(type && { type }),
+      ...((start || end) && {
+        date: {
+          ...(start && { gte: start }),
+          ...(end && { lte: end }),
+        },
+      }),
+    },
+    select: {
+      amount: true,
+      type: true,
+    },
+  });
+
+  let income = 0;
+  let expense = 0;
+
+  for (const transaction of transactions) {
+    const amount = Number(transaction.amount);
+    if (transaction.type === "INCOME") {
+      income += amount;
+    } else {
+      expense += amount;
+    }
+  }
+
+  return {
+    income,
+    expense,
+    balance: income - expense,
+  };
+};
+
+export const getMonthlyFinancials = async (filters: TransactionFilters) => {
+  const { userId, categoryId, type, startDate, endDate } = filters;
+  const start = parseDate(startDate);
+  const end = parseDate(endDate);
+
+  const transactions = await prisma.transaction.findMany({
+    where: {
+      userId,
+      ...(categoryId && { categoryId }),
+      ...(type && { type }),
+      ...((start || end) && {
+        date: {
+          ...(start && { gte: start }),
+          ...(end && { lte: end }),
+        },
+      }),
+    },
+    select: {
+      amount: true,
+      type: true,
+      date: true,
+    },
+    orderBy: { date: "asc" },
+  });
+
+  const monthlyData = new Map<
+    string,
+    { month: string; income: number; expense: number }
+  >();
+
+  for (const transaction of transactions) {
+    const date = new Date(transaction.date);
+    const monthKey = `${date.getFullYear()}-${String(
+      date.getMonth() + 1,
+    ).padStart(2, "0")}`;
+    const monthLabel = date.toLocaleString("default", { month: "short" });
+
+    if (!monthlyData.has(monthKey)) {
+      monthlyData.set(monthKey, { month: monthLabel, income: 0, expense: 0 });
+    }
+
+    const entry = monthlyData.get(monthKey)!;
+    const amount = Number(transaction.amount);
+
+    if (transaction.type === "INCOME") {
+      entry.income += amount;
+    } else {
+      entry.expense += amount;
+    }
+  }
+
+  return Array.from(monthlyData.entries())
+    .sort((a, b) => a[0].localeCompare(b[0]))
+    .map(([, data]) => data)
+    .slice(-6);
+};
+
+export const getCategoryExpenses = async (filters: TransactionFilters) => {
+  const { userId, categoryId, type, startDate, endDate } = filters;
+  const start = parseDate(startDate);
+  const end = parseDate(endDate);
+
+  const transactions = await prisma.transaction.findMany({
+    where: {
+      userId,
+      type: "EXPENSE",
+      ...(categoryId && { categoryId }),
+      ...((start || end) && {
+        date: {
+          ...(start && { gte: start }),
+          ...(end && { lte: end }),
+        },
+      }),
+    },
+    include: {
+      category: {
+        select: {
+          name: true,
+        },
+      },
+    },
+  });
+
+  const categoryMap = new Map<string, number>();
+
+  for (const transaction of transactions) {
+    const amount = Number(transaction.amount);
+    const categoryName = transaction.category.name;
+    const current = categoryMap.get(categoryName) || 0;
+    categoryMap.set(categoryName, current + amount);
+  }
+
+  return Array.from(categoryMap.entries())
+    .map(([name, value]) => ({ name, value }))
+    .sort((a, b) => b.value - a.value)
+    .slice(0, 5);
+};
+
+export const getTransactionCategories = async (filters: TransactionFilters) => {
+  const { userId, categoryId, type, startDate, endDate } = filters;
+  const start = parseDate(startDate);
+  const end = parseDate(endDate);
+
+  const transactions = await prisma.transaction.findMany({
+    where: {
+      userId,
+      ...(categoryId && { categoryId }),
+      ...(type && { type }),
+      ...((start || end) && {
+        date: {
+          ...(start && { gte: start }),
+          ...(end && { lte: end }),
+        },
+      }),
+    },
+    include: {
+      category: {
+        select: {
+          id: true,
+          name: true,
+        },
+      },
+    },
+    distinct: ["categoryId"],
+  });
+
+  const categoryMap = new Map<string, string>();
+
+  for (const transaction of transactions) {
+    const categoryName = transaction.category.name;
+    if (!categoryMap.has(categoryName)) {
+      categoryMap.set(categoryName, transaction.category.id);
+    }
+  }
+
+  return Array.from(categoryMap.entries())
+    .sort((a, b) => a[0].localeCompare(b[0]))
+    .map(([name, id]) => ({ name, id }));
+};

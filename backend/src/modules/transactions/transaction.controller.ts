@@ -116,3 +116,102 @@ export const deleteTransaction = async (req: AuthRequest, res: Response) => {
     return sendError(res, "Failed to delete transaction", 500);
   }
 };
+
+export const getOverview = async (req: AuthRequest, res: Response) => {
+  try {
+    const userId = req.userId;
+    if (!userId) {
+      return sendError(res, "Authentication required", 401);
+    }
+    const { categoryId, type, startDate, endDate } = req.query;
+    const overview = await TransactionService.getTransactionOverview({
+      userId,
+      ...(categoryId && { categoryId: categoryId as string }),
+      ...(type && { type: type as "INCOME" | "EXPENSE" }),
+      ...(startDate && { startDate: startDate as string }),
+      ...(endDate && { endDate: endDate as string }),
+    } as TransactionFilters);
+    return sendSuccess(
+      res,
+      overview,
+      "Transaction overview fetched successfully",
+      200,
+    );
+  } catch (error) {
+    return sendError(res, "Failed to fetch transaction overview", 500);
+  }
+};
+
+export const getMonthlyFinancials = async (req: AuthRequest, res: Response) => {
+  try {
+    const userId = req.userId;
+    if (!userId) {
+      return sendError(res, "Authentication required", 401);
+    }
+    const { categoryId, type, startDate, endDate } = req.query;
+    const monthlyFinancials = await TransactionService.getMonthlyFinancials({
+      userId,
+      ...(categoryId && { categoryId: categoryId as string }),
+      ...(type && { type: type as "INCOME" | "EXPENSE" }),
+      ...(startDate && { startDate: startDate as string }),
+      ...(endDate && { endDate: endDate as string }),
+    } as TransactionFilters);
+    return sendSuccess(
+      res,
+      monthlyFinancials,
+      "Monthly financials fetched successfully",
+      200,
+    );
+  } catch (error) {
+    return sendError(res, "Failed to fetch monthly financials", 500);
+  }
+};
+
+export const getCategoryExpenses = async (req: AuthRequest, res: Response) => {
+  try {
+    const userId = req.userId;
+    if (!userId) {
+      return sendError(res, "Authentication required", 401);
+    }
+    const { categoryId, startDate, endDate } = req.query;
+    const categoryExpenses = await TransactionService.getCategoryExpenses({
+      userId,
+      ...(categoryId && { categoryId: categoryId as string }),
+      ...(startDate && { startDate: startDate as string }),
+      ...(endDate && { endDate: endDate as string }),
+    } as TransactionFilters);
+    return sendSuccess(
+      res,
+      categoryExpenses,
+      "Category expenses fetched successfully",
+      200,
+    );
+  } catch (error) {
+    return sendError(res, "Failed to fetch category expenses", 500);
+  }
+};
+
+export const getCategories = async (req: AuthRequest, res: Response) => {
+  try {
+    const userId = req.userId;
+    if (!userId) {
+      return sendError(res, "Authentication required", 401);
+    }
+    const { categoryId, type, startDate, endDate } = req.query;
+    const categories = await TransactionService.getTransactionCategories({
+      userId,
+      ...(categoryId && { categoryId: categoryId as string }),
+      ...(type && { type: type as "INCOME" | "EXPENSE" }),
+      ...(startDate && { startDate: startDate as string }),
+      ...(endDate && { endDate: endDate as string }),
+    } as TransactionFilters);
+    return sendSuccess(
+      res,
+      categories,
+      "Transaction categories fetched successfully",
+      200,
+    );
+  } catch (error) {
+    return sendError(res, "Failed to fetch transaction categories", 500);
+  }
+};

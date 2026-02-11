@@ -1,40 +1,107 @@
-import { useMemo } from "react";
-import { type Transaction } from "@/features/transactions/transaction.schema";
+import { useQuery } from "@tanstack/react-query";
+import { transactionsAPI } from "@/features/transactions/transactions.api";
+import type { TransactionFilters } from "@/features/transactions/transaction.schema";
 
-export function useTransactionCategories(transactions: Transaction[]) {
-  return useMemo(() => {
-    const categoryMap = new Map<string, string>();
-
-    for (const transaction of transactions) {
-      if (!categoryMap.has(transaction.category.name)) {
-        categoryMap.set(transaction.category.name, transaction.category.id);
-      }
-    }
-
-    return Array.from(categoryMap.entries())
-      .sort((a, b) => a[0].localeCompare(b[0]))
-      .map(([name, id]) => ({ name, id }));
-  }, [transactions]);
+interface UseTransactionDataParams {
+  filters: TransactionFilters;
+  categoryId: string;
+  type: "" | "INCOME" | "EXPENSE";
+  enabled: boolean;
 }
 
-export function useTransactionOverview(transactions: Transaction[]) {
-  return useMemo(() => {
-    let income = 0;
-    let expense = 0;
+export function useTransactionCategories({
+  filters,
+  categoryId,
+  type,
+  enabled,
+}: UseTransactionDataParams) {
+  return useQuery({
+    queryKey: [
+      "transaction-categories",
+      filters.startDate,
+      filters.endDate,
+      categoryId,
+      type,
+    ],
+    queryFn: () =>
+      transactionsAPI.getCategories({
+        ...filters,
+        ...(categoryId && categoryId !== "all" && { categoryId }),
+        ...(type && { type }),
+      }),
+    enabled,
+    select: (data) => data || [],
+  });
+}
 
-    for (const transaction of transactions) {
-      const amount = Number(transaction.amount);
-      if (transaction.type === "INCOME") {
-        income += amount;
-      } else {
-        expense += amount;
-      }
-    }
+export function useTransactionOverview({
+  filters,
+  categoryId,
+  type,
+  enabled,
+}: UseTransactionDataParams) {
+  return useQuery({
+    queryKey: [
+      "transaction-overview",
+      filters.startDate,
+      filters.endDate,
+      categoryId,
+      type,
+    ],
+    queryFn: () =>
+      transactionsAPI.getOverview({
+        ...filters,
+        ...(categoryId && categoryId !== "all" && { categoryId }),
+        ...(type && { type }),
+      }),
+    enabled,
+    select: (data) => data || { income: 0, expense: 0, balance: 0 },
+  });
+}
 
-    return {
-      income,
-      expense,
-      balance: income - expense,
-    };
-  }, [transactions]);
+export function useMonthlyFinancials({
+  filters,
+  categoryId,
+  type,
+  enabled,
+}: UseTransactionDataParams) {
+  return useQuery({
+    queryKey: [
+      "monthly-financials",
+      filters.startDate,
+      filters.endDate,
+      categoryId,
+      type,
+    ],
+    queryFn: () =>
+      transactionsAPI.getMonthlyFinancials({
+        ...filters,
+        ...(categoryId && categoryId !== "all" && { categoryId }),
+        ...(type && { type }),
+      }),
+    enabled,
+    select: (data) => data || [],
+  });
+}
+
+export function useCategoryExpenses({
+  filters,
+  categoryId,
+  enabled,
+}: Omit<UseTransactionDataParams, "type">) {
+  return useQuery({
+    queryKey: [
+      "category-expenses",
+      filters.startDate,
+      filters.endDate,
+      categoryId,
+    ],
+    queryFn: () =>
+      transactionsAPI.getCategoryExpenses({
+        ...filters,
+        ...(categoryId && categoryId !== "all" && { categoryId }),
+      }),
+    enabled,
+    select: (data) => data || [],
+  });
 }
