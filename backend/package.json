@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "dev": "tsx watch src/server.ts",
-    "build": "npx prisma generate && npx tsc -p tsconfig.json",
+    "build": "tsc -p tsconfig.json",
     "start": "npx prisma migrate deploy && node dist/server.js",
     "clean": "rm -rf dist",
     "test": "echo \"Error: no test specified\" && exit 1"
