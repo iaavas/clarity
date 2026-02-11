@@ -1,18 +1,27 @@
-import { RequestHandler } from "express";
+import { Response } from "express";
 import * as TransactionService from "./transaction.service";
 import { sendError, sendSuccess } from "../../utils/apiResponse";
 import { TransactionFilters } from "./transaction.types";
-import { createTransactionSchema } from "./transaction.schema";
+import {
+  createTransactionSchema,
+  updateTransactionSchema,
+} from "./transaction.schema";
+import { AuthRequest } from "../../middlewares/auth.middleware";
 import { z } from "zod";
-export const getTransactions: RequestHandler = async (req, res) => {
+
+export const getTransactions = async (req: AuthRequest, res: Response) => {
   try {
-    const { userId, ...rest } = req.query;
-    if (!userId || typeof userId !== "string") {
-      return sendError(res, "userId is required", 400);
+    const userId = req.userId;
+    if (!userId) {
+      return sendError(res, "Authentication required", 401);
     }
+    const { categoryId, type, startDate, endDate } = req.query;
     const transactions = await TransactionService.findAllTransactions({
       userId,
-      ...rest,
+      ...(categoryId && { categoryId: categoryId as string }),
+      ...(type && { type: type as "INCOME" | "EXPENSE" }),
+      ...(startDate && { startDate: startDate as string }),
+      ...(endDate && { endDate: endDate as string }),
     } as TransactionFilters);
     return sendSuccess(
       res,
@@ -25,9 +34,13 @@ export const getTransactions: RequestHandler = async (req, res) => {
   }
 };
 
-export const createTransaction: RequestHandler = async (req, res) => {
+export const createTransaction = async (req: AuthRequest, res: Response) => {
   try {
-    const parsed = createTransactionSchema.safeParse(req.body);
+    const userId = req.userId;
+    if (!userId) {
+      return sendError(res, "Authentication required", 401);
+    }
+    const parsed = createTransactionSchema.safeParse({ ...req.body, userId });
     if (!parsed.success) {
       return sendError(
         res,
@@ -47,5 +60,59 @@ export const createTransaction: RequestHandler = async (req, res) => {
     );
   } catch (error) {
     return sendError(res, "Check your transaction data", 400);
+  }
+};
+
+export const updateTransaction = async (req: AuthRequest, res: Response) => {
+  try {
+    const userId = req.userId;
+    if (!userId) {
+      return sendError(res, "Authentication required", 401);
+    }
+    const { id } = req.params as { id: string };
+    const parsed = updateTransactionSchema.safeParse(req.body);
+    if (!parsed.success) {
+      return sendError(
+        res,
+        z.prettifyError(parsed.error) || "Invalid update payload",
+        422,
+      );
+    }
+    const transaction = await TransactionService.updateTransactionById(
+      id as string,
+      userId,
+      parsed.data,
+    );
+    if (!transaction) {
+      return sendError(res, "Transaction not found", 404);
+    }
+    return sendSuccess(
+      res,
+      transaction,
+      "Transaction updated successfully",
+      200,
+    );
+  } catch (error) {
+    return sendError(res, "Failed to update transaction", 400);
+  }
+};
+
+export const deleteTransaction = async (req: AuthRequest, res: Response) => {
+  try {
+    const userId = req.userId;
+    if (!userId) {
+      return sendError(res, "Authentication required", 401);
+    }
+    const { id } = req.params as { id: string };
+    const deleted = await TransactionService.deleteTransactionById(
+      id as string,
+      userId,
+    );
+    if (!deleted) {
+      return sendError(res, "Transaction not found", 404);
+    }
+    return sendSuccess(res, null, "Transaction deleted successfully", 200);
+  } catch (error) {
+    return sendError(res, "Failed to delete transaction", 500);
   }
 };

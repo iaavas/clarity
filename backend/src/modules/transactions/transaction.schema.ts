@@ -9,4 +9,13 @@ export const createTransactionSchema = z.object({
   userId: z.uuid(),
 });
 
+export const updateTransactionSchema = z.object({
+  amount: z.number().positive().optional(),
+  type: z.enum(["INCOME", "EXPENSE"]).optional(),
+  categoryName: z.string().min(1).optional(),
+  description: z.string().optional().nullable(),
+  date: z.string().optional(),
+});
+
 export type CreateTransactionInput = z.infer<typeof createTransactionSchema>;
+export type UpdateTransactionInput = z.infer<typeof updateTransactionSchema>;
