@@ -1,3 +1,4 @@
+import { lazy, Suspense } from "react";
 import {
   DashboardHeader,
   OverviewCards,
@@ -6,8 +7,6 @@ import {
   TransactionDialog,
   DeleteDialog,
   ErrorBanner,
-  IncomeExpenseChart,
-  CategoryPieChart,
 } from "@/features/transactions/components";
 
 import { useDataStore } from "@/features/transactions/store/dataStore";
@@ -16,6 +15,25 @@ import {
   useMonthlyFinancials,
   useCategoryExpenses,
 } from "@/features/transactions/hooks/useTransactionData";
+
+const IncomeExpenseChart = lazy(() =>
+  import("@/features/transactions/components/Charts").then((mod) => ({
+    default: mod.IncomeExpenseChart,
+  })),
+);
+const CategoryPieChart = lazy(() =>
+  import("@/features/transactions/components/Charts").then((mod) => ({
+    default: mod.CategoryPieChart,
+  })),
+);
+
+function ChartLoadingFallback() {
+  return (
+    <div className="flex items-center justify-center h-[350px] text-muted-foreground text-sm">
+      Loading charts...
+    </div>
+  );
+}
 
 export default function Dashboard() {
   const filters = useDataStore((state) => state.filters);
@@ -43,10 +61,14 @@ export default function Dashboard() {
         <DashboardHeader />
         <ErrorBanner />
         <OverviewCards />
-        
+
         <div className="mt-8 grid gap-4 grid-cols-1 lg:grid-cols-7 mb-8">
-          <IncomeExpenseChart data={monthlyFinancials} />
-          <CategoryPieChart data={categoryExpenses} />
+          <Suspense fallback={<ChartLoadingFallback />}>
+            <IncomeExpenseChart data={monthlyFinancials} />
+          </Suspense>
+          <Suspense fallback={<ChartLoadingFallback />}>
+            <CategoryPieChart data={categoryExpenses} />
+          </Suspense>
         </div>
 
         <FilterBar />

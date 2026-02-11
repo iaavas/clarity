@@ -10,4 +10,25 @@ export default defineConfig({
       "@": path.resolve(__dirname, "./src"),
     },
   },
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          "react-vendor": ["react", "react-dom", "react-router-dom"],
+          charts: ["recharts"],
+          forms: ["react-hook-form", "@hookform/resolvers", "zod"],
+          ui: [
+            "@radix-ui/react-label",
+            "@radix-ui/react-slot",
+            "class-variance-authority",
+            "clsx",
+            "tailwind-merge",
+          ],
+          "date-utils": ["date-fns", "react-day-picker"],
+          query: ["@tanstack/react-query"],
+        },
+      },
+    },
+    chunkSizeWarningLimit: 1000,
+  },
 });
