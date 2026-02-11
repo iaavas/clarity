@@ -1,5 +1,5 @@
 import prisma from "../../config/db";
-import { Prisma } from "../../../generated/prisma/client";
+import { Prisma } from "../../generated/prisma/client";
 import { TransactionFilters } from "./transaction.types";
 import {
   CreateTransactionInput,

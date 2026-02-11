@@ -1,4 +1,4 @@
-import { TransactionType } from "../../../generated/prisma/client";
+import { TransactionType } from "../../generated/prisma/client";
 
 export type TransactionFilters = {
   userId: string;
