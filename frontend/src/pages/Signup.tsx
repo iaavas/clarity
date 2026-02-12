@@ -42,7 +42,6 @@ export default function Signup() {
 
   return (
     <div className="flex min-h-screen bg-background font-sans antialiased">
-      {/* Sidebar: Branding/Value Prop (Hidden on Mobile) */}
       <div className="relative hidden w-0 flex-1 bg-muted lg:block">
         <div className="absolute inset-0 flex flex-col justify-between p-12">
           <div className="flex items-center gap-2 text-2xl font-bold tracking-tight text-foreground">

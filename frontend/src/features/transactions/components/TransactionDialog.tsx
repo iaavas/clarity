@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { format } from "date-fns";
@@ -8,6 +8,7 @@ import {
 } from "@/features/transactions/transaction.schema";
 import { useUIStore } from "@/features/transactions/store/uiStore";
 import { useTransactionActions } from "@/features/transactions/hooks/useTransactionActions";
+import { getCategoryOnly } from "@/lib/gemini-tools";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -24,7 +25,14 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { ArrowRight, Check, TrendingUp, TrendingDown } from "lucide-react";
+import {
+  ArrowRight,
+  Check,
+  Loader2,
+  Sparkles,
+  TrendingUp,
+  TrendingDown,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const DEFAULT_VALUES: TransactionFormData = {
@@ -45,6 +53,7 @@ export function TransactionDialog() {
   const resetDialogStep = useUIStore((state) => state.resetDialogStep);
   const { saveTransaction } = useTransactionActions();
   const totalSteps = 3;
+  const [categorySuggesting, setCategorySuggesting] = useState(false);
 
   const form = useForm<TransactionFormData>({
     resolver: zodResolver(transactionFormSchema),
@@ -65,6 +74,28 @@ export function TransactionDialog() {
     }
   }, [transaction, open, form]);
 
+  useEffect(() => {
+    if (!open || step !== 3) return;
+    const description = form.getValues("description")?.trim();
+    if (!description) return;
+
+    let cancelled = false;
+    setCategorySuggesting(true);
+    getCategoryOnly(description)
+      .then((category) => {
+        if (!cancelled) {
+          form.setValue("categoryName", category);
+        }
+      })
+      .catch(() => {})
+      .finally(() => {
+        if (!cancelled) setCategorySuggesting(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [open, step, form]);
+
   const handleClose = () => {
     form.reset(DEFAULT_VALUES);
     resetDialogStep();
@@ -79,8 +110,8 @@ export function TransactionDialog() {
 
     const fieldsByStep: Record<number, (keyof TransactionFormData)[]> = {
       1: ["amount", "type"],
-      2: ["categoryName"],
-      3: ["description", "date"],
+      2: ["description", "date"],
+      3: ["categoryName"],
     };
     const isValid = await form.trigger(fieldsByStep[step]);
     if (isValid) {
@@ -117,7 +148,7 @@ export function TransactionDialog() {
 
   return (
     <Dialog open={open} onOpenChange={(isOpen) => !isOpen && handleClose()}>
-      <DialogContent className="sm:max-w-[450px]" onKeyDown={handleKeyDown}>
+      <DialogContent className="sm:max-w-112.5" onKeyDown={handleKeyDown}>
         <DialogHeader>
           <div className="flex flex-col gap-4">
             <div className="flex items-center justify-between">
@@ -219,17 +250,25 @@ export function TransactionDialog() {
               <div className="space-y-4 animate-in fade-in slide-in-from-right-4">
                 <FormField
                   control={form.control}
-                  name="categoryName"
+                  name="date"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Category</FormLabel>
+                      <FormLabel>Date</FormLabel>
+                      <Input type="date" {...field} autoFocus />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="description"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Description</FormLabel>
                       <Input
-                        placeholder="e.g., Groceries, Rent..."
+                        placeholder="What was this for?"
                         {...field}
-                        autoFocus
                         className="text-lg"
                       />
-                      <FormMessage />
                     </FormItem>
                   )}
                 />
@@ -240,21 +279,46 @@ export function TransactionDialog() {
               <div className="space-y-4 animate-in fade-in slide-in-from-right-4">
                 <FormField
                   control={form.control}
-                  name="date"
+                  name="categoryName"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Date</FormLabel>
-                      <Input type="date" {...field} />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="description"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Description</FormLabel>
-                      <Input placeholder="What was this for?" {...field} />
+                      <FormLabel>Category</FormLabel>
+                      <div className="flex gap-2">
+                        <Input
+                          placeholder="e.g., Groceries, Rent..."
+                          {...field}
+                          autoFocus
+                          className="text-lg flex-1"
+                        />
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="icon"
+                          title="Suggest category from description"
+                          disabled={
+                            categorySuggesting ||
+                            !form.watch("description")?.trim()
+                          }
+                          onClick={async () => {
+                            const desc = form.getValues("description")?.trim();
+                            if (!desc) return;
+                            setCategorySuggesting(true);
+                            try {
+                              const suggested = await getCategoryOnly(desc);
+                              form.setValue("categoryName", suggested);
+                            } finally {
+                              setCategorySuggesting(false);
+                            }
+                          }}
+                        >
+                          {categorySuggesting ? (
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                          ) : (
+                            <Sparkles className="h-4 w-4" />
+                          )}
+                        </Button>
+                      </div>
+                      <FormMessage />
                     </FormItem>
                   )}
                 />

@@ -90,7 +90,7 @@ export const transactionTools = {
     {
       name: "getTransactions",
       description:
-        "Get a list of transactions with optional filters. Use this when the user wants to view or search for transactions.",
+        "Search transactions. Use names for categories if IDs are unknown. Use this when the user wants to view or search for transactions.",
       parameters: {
         type: "OBJECT",
         properties: {
