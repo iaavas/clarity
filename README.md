@@ -21,7 +21,7 @@ Clarity is a personal expense tracking app designed to help you understand your 
 ### Step 1: Clone the Repository
 
 ```bash
-https://github.com/iaavas/clarity
+git clone https://github.com/iaavas/clarity.git
 cd clarity
 ```
 
