@@ -13,7 +13,7 @@ export function ThemeSwitch() {
       aria-label={
         theme === "light" ? "Switch to dark mode" : "Switch to light mode"
       }
-      className="shrink-0"
+      className="shrink-0 cursor-pointer"
     >
       {theme === "light" ? (
         <Moon className="h-4 w-4" />

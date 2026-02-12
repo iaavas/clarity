@@ -19,7 +19,7 @@ export function DashboardHeader() {
           onClick={handleLogout}
           variant="outline"
           size="sm"
-          className="gap-1.5"
+          className="gap-1.5 cursor-pointer"
         >
           <LogOut className="h-4 w-4" />
           Logout

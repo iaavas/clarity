@@ -145,8 +145,8 @@ export function AIChat() {
         onClick={() => setIsOpen(!isOpen)}
         size="icon"
         className={cn(
-          "fixed bottom-4 right-4 sm:bottom-6 sm:right-6 h-14 w-14 rounded-full shadow-lg z-50 transition-all hover:scale-110 bg-violet-600 text-white hover:bg-violet-700 dark:bg-violet-500 dark:hover:bg-violet-600 border border-violet-700 dark:border-violet-400",
-          isOpen && "scale-0 opacity-0 pointer-events-none",
+          "fixed bottom-4 right-4 sm:bottom-6 sm:right-6 h-14 w-14 rounded-full shadow-lg z-50 transition-all hover:scale-110 bg-violet-600 text-white hover:bg-violet-700 dark:bg-violet-500 dark:hover:bg-violet-600 border border-violet-700 dark:border-violet-400 cursor-pointer",
+          isOpen && "scale-0 opacity-0 ",
         )}
       >
         <MessageCircle className="h-6 w-6" />
@@ -164,7 +164,7 @@ export function AIChat() {
                 variant="ghost"
                 size="icon"
                 onClick={() => setIsOpen(false)}
-                className="h-8 w-8 hover:bg-accent hover:text-accent-foreground"
+                className="h-8 w-8 hover:bg-accent hover:text-accent-foreground cursor-pointer"
                 aria-label="Close chat"
               >
                 <X className="h-4 w-4" />

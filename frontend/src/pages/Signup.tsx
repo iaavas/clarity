@@ -41,107 +41,139 @@ export default function Signup() {
   };
 
   return (
-    <div className="flex min-h-screen flex-col bg-background">
-      <div className="absolute right-4 top-4">
-        <ThemeSwitch />
+    <div className="flex min-h-screen bg-background font-sans antialiased">
+      {/* Sidebar: Branding/Value Prop (Hidden on Mobile) */}
+      <div className="relative hidden w-0 flex-1 bg-muted lg:block">
+        <div className="absolute inset-0 flex flex-col justify-between p-12">
+          <div className="flex items-center gap-2 text-2xl font-bold tracking-tight text-foreground">
+            <div className="h-8 w-8 rounded-lg bg-primary" />
+            Clarity
+          </div>
+          <div className="max-w-md">
+            <blockquote className="space-y-2">
+              <p className="text-3xl font-medium leading-tight tracking-tight">
+                "The simplest way to track your expenses and gain financial
+                freedom."
+              </p>
+            </blockquote>
+          </div>
+        </div>
       </div>
-      <div className="flex flex-1 items-center justify-center p-4">
-        <div className="w-full max-w-md space-y-8">
-          <div className="text-center">
-            <h1 className="text-4xl font-bold text-foreground sm:text-5xl">
-              Clarity
-            </h1>
-            <p className="mt-3 text-sm text-muted-foreground sm:text-base">
-              Your personal expense tracking app
-            </p>
-            <p className="mt-1 text-xs text-muted-foreground/80 sm:text-sm">
-              Understand your finances better and make smarter financial
-              decisions
+
+      <div className="flex flex-1 flex-col justify-center px-6 py-12 lg:flex-none lg:px-20 xl:px-24">
+        <div className="absolute right-8 top-8">
+          <ThemeSwitch />
+        </div>
+
+        <div className="mx-auto w-full max-w-sm lg:w-96">
+          <div className="mb-10">
+            <h2 className="text-3xl font-extrabold tracking-tight text-foreground">
+              Create an account
+            </h2>
+            <p className="mt-2 text-sm text-muted-foreground">
+              Already have an account?{" "}
+              <Link
+                to="/login"
+                className="font-semibold text-primary hover:text-primary/80 transition-colors"
+              >
+                Sign in
+              </Link>
             </p>
           </div>
 
-          <div className="rounded-xl border border-border bg-card p-6 sm:p-8">
-            <div className="mb-6">
-              <h2 className="text-2xl font-semibold text-foreground">
-                Sign up
-              </h2>
-              <p className="mt-1 text-sm text-muted-foreground">
-                Create a new account to get started
-              </p>
-            </div>
-            <form onSubmit={handleSubmit(onSubmit)} className="mt-6 space-y-4">
-              {error && (
-                <div className="rounded-lg border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive">
-                  {error}
-                </div>
-              )}
-              <div className="space-y-2">
-                <Label htmlFor="email" className="text-foreground">
-                  Email
-                </Label>
-                <Input
-                  id="email"
-                  type="email"
-                  placeholder="you@example.com"
-                  {...register("email")}
-                  aria-invalid={errors.email ? "true" : "false"}
-                />
-                {errors.email && (
-                  <p className="text-sm text-destructive">
-                    {errors.email.message}
-                  </p>
-                )}
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+            {error && (
+              <div className="rounded-md bg-destructive/10 p-3 text-xs font-medium text-destructive ring-1 ring-inset ring-destructive/20">
+                {error}
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="password" className="text-foreground">
-                  Password
-                </Label>
-                <PasswordInput
-                  id="password"
-                  placeholder="••••••••"
-                  {...register("password")}
-                  aria-invalid={errors.password ? "true" : "false"}
-                />
-                {errors.password && (
-                  <p className="text-sm text-destructive">
-                    {errors.password.message}
-                  </p>
-                )}
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="confirmPassword" className="text-foreground">
-                  Confirm password
-                </Label>
-                <PasswordInput
-                  id="confirmPassword"
-                  placeholder="••••••••"
-                  {...register("confirmPassword")}
-                  aria-invalid={errors.confirmPassword ? "true" : "false"}
-                />
-                {errors.confirmPassword && (
-                  <p className="text-sm text-destructive">
-                    {errors.confirmPassword.message}
-                  </p>
-                )}
-              </div>
-              <Button
-                type="submit"
-                className="w-full bg-violet-600 text-white hover:bg-violet-700"
-                disabled={loading}
+            )}
+
+            <div className="space-y-1.5">
+              <Label
+                htmlFor="email"
+                className="text-xs font-semibold uppercase tracking-wider text-muted-foreground"
               >
-                {loading ? "Creating account..." : "Sign up"}
-              </Button>
-              <p className="text-center text-sm text-muted-foreground">
-                Already have an account?{" "}
-                <Link
-                  to="/login"
-                  className="font-medium text-violet-600 hover:underline"
-                >
-                  Login
-                </Link>
-              </p>
-            </form>
-          </div>
+                Email Address
+              </Label>
+              <Input
+                id="email"
+                type="email"
+                placeholder="name@company.com"
+                className="h-11 border-input bg-background transition-all focus-visible:ring-1 focus-visible:ring-primary"
+                {...register("email")}
+                aria-invalid={errors.email ? "true" : "false"}
+              />
+              {errors.email && (
+                <p className="text-xs font-medium text-destructive">
+                  {errors.email.message}
+                </p>
+              )}
+            </div>
+
+            <div className="space-y-1.5">
+              <Label
+                htmlFor="password"
+                className="text-xs font-semibold uppercase tracking-wider text-muted-foreground"
+              >
+                Password
+              </Label>
+              <PasswordInput
+                id="password"
+                placeholder="••••••••"
+                className="h-11 border-input bg-background transition-all focus-visible:ring-1 focus-visible:ring-primary"
+                {...register("password")}
+                aria-invalid={errors.password ? "true" : "false"}
+              />
+              {errors.password && (
+                <p className="text-xs font-medium text-destructive">
+                  {errors.password.message}
+                </p>
+              )}
+            </div>
+
+            <div className="space-y-1.5">
+              <Label
+                htmlFor="confirmPassword"
+                className="text-xs font-semibold uppercase tracking-wider text-muted-foreground"
+              >
+                Confirm password
+              </Label>
+              <PasswordInput
+                id="confirmPassword"
+                placeholder="••••••••"
+                className="h-11 border-input bg-background transition-all focus-visible:ring-1 focus-visible:ring-primary"
+                {...register("confirmPassword")}
+                aria-invalid={errors.confirmPassword ? "true" : "false"}
+              />
+              {errors.confirmPassword && (
+                <p className="text-xs font-medium text-destructive">
+                  {errors.confirmPassword.message}
+                </p>
+              )}
+            </div>
+
+            <Button
+              type="submit"
+              className="group relative flex w-full h-11 items-center justify-center overflow-hidden rounded-md bg-primary font-semibold text-primary-foreground transition-all hover:bg-primary/90"
+              disabled={loading}
+            >
+              {loading ? (
+                <span className="flex items-center gap-2">
+                  <span className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
+                  Creating account...
+                </span>
+              ) : (
+                "Sign up"
+              )}
+            </Button>
+          </form>
+
+          <footer className="mt-20">
+            <p className="text-center text-xs text-muted-foreground">
+              By continuing, you agree to our Terms of Service and Privacy
+              Policy.
+            </p>
+          </footer>
         </div>
       </div>
     </div>

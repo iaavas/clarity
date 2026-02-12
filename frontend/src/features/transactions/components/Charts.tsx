@@ -12,6 +12,7 @@ import {
   YAxis,
 } from "recharts";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useTheme } from "@/hooks/useTheme";
 
 interface IncomeExpenseChartProps {
   data: { month: string; income: number; expense: number }[];
@@ -30,7 +31,11 @@ export function IncomeExpenseChart({ data }: IncomeExpenseChartProps) {
               data={data}
               margin={{ top: 10, right: 30, left: 0, bottom: 0 }}
             >
-              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border)" />
+              <CartesianGrid
+                strokeDasharray="3 3"
+                vertical={false}
+                stroke="var(--border)"
+              />
               <XAxis
                 dataKey="month"
                 stroke="var(--muted-foreground)"
@@ -62,14 +67,14 @@ export function IncomeExpenseChart({ data }: IncomeExpenseChartProps) {
               <Bar
                 dataKey="income"
                 name="Income"
-                fill="#8b5cf6" // violet-500
+                fill="#8b5cf6"
                 radius={[4, 4, 0, 0]}
                 barSize={30}
               />
               <Bar
                 dataKey="expense"
                 name="Expense"
-                fill="#f97316" // orange-500
+                fill="#f97316"
                 radius={[4, 4, 0, 0]}
                 barSize={30}
               />
@@ -85,15 +90,13 @@ interface CategoryPieChartProps {
   data: { name: string; value: number }[];
 }
 
-const COLORS = [
-  "#8b5cf6", 
-  "#06b6d4", 
-  "#f97316", 
-  "#ec4899", 
-  "#10b981", 
-];
+const COLORS = ["#8b5cf6", "#06b6d4", "#f97316", "#ec4899", "#10b981"];
 
 export function CategoryPieChart({ data }: CategoryPieChartProps) {
+  const { theme } = useTheme();
+  const isDark = theme === "dark";
+  const tooltipColor = isDark ? "#fff" : "var(--foreground)";
+
   return (
     <Card className="col-span-1 lg:col-span-3">
       <CardHeader>
@@ -127,10 +130,13 @@ export function CategoryPieChart({ data }: CategoryPieChartProps) {
                     borderColor: "var(--border)",
                     borderRadius: "8px",
                     boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1)",
+                    color: tooltipColor,
                   }}
-                  formatter={(value: number | undefined) => [
-                    `$${(value || 0).toFixed(2)}`,
-                    "",
+                  labelStyle={{ color: tooltipColor }}
+                  itemStyle={{ color: tooltipColor }}
+                  formatter={(value: number | undefined, name?: string) => [
+                    `$${(value ?? 0).toFixed(2)}`,
+                    name ?? "Amount",
                   ]}
                 />
                 <Legend
